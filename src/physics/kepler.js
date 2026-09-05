@@ -114,7 +114,7 @@ export function sampleOrbitPath(elements, steps = 180) {
   return points;
 }
 
-const SIDEREAL_YEAR_DAYS = 365.25636;
+export const SIDEREAL_YEAR_DAYS = 365.25636;
 
 /**
  * Resolve a JPL-style planetary element set (a, e, i, L, long.peri, long.node

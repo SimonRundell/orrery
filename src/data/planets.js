@@ -14,6 +14,11 @@
  * `visualRadiusPx` is a display-only marker size (true diameters are far
  * too small to see at solar-system scale) and `color` is used for both the
  * marker and its orbit path.
+ *
+ * `gmKm3PerS2` (standard gravitational parameter, GM) and `radiusKm` (mean
+ * equatorial radius) are real physical values, used by the mission-planner
+ * physics (gravity-assist turning angle, sphere-of-influence radius,
+ * minimum safe flyby altitude). Source: NASA/JPL planetary fact sheets.
  */
 
 export const PLANETS = [
@@ -21,6 +26,8 @@ export const PLANETS = [
     name: 'Mercury',
     color: '#b1adad',
     visualRadiusPx: 3.2,
+    gmKm3PerS2: 22032,
+    radiusKm: 2440.5,
     a: 0.38709927, aDot: 0.00000037,
     e: 0.20563593, eDot: 0.00001906,
     i: 7.00497902, iDot: -0.00594749,
@@ -32,6 +39,8 @@ export const PLANETS = [
     name: 'Venus',
     color: '#e8cda2',
     visualRadiusPx: 5.6,
+    gmKm3PerS2: 324859,
+    radiusKm: 6051.8,
     a: 0.72333566, aDot: 0.00000390,
     e: 0.00677672, eDot: -0.00004107,
     i: 3.39467605, iDot: -0.00078890,
@@ -43,6 +52,8 @@ export const PLANETS = [
     name: 'Earth',
     color: '#4d97ff',
     visualRadiusPx: 6,
+    gmKm3PerS2: 398600.4418,
+    radiusKm: 6378.137,
     a: 1.00000261, aDot: 0.00000562,
     e: 0.01671123, eDot: -0.00004392,
     i: -0.00001531, iDot: -0.01294668,
@@ -54,6 +65,8 @@ export const PLANETS = [
     name: 'Mars',
     color: '#c1440e',
     visualRadiusPx: 4,
+    gmKm3PerS2: 42828.37,
+    radiusKm: 3396.2,
     a: 1.52371034, aDot: 0.00001847,
     e: 0.09339410, eDot: 0.00007882,
     i: 1.84969142, iDot: -0.00813131,
@@ -65,6 +78,8 @@ export const PLANETS = [
     name: 'Jupiter',
     color: '#d8ae82',
     visualRadiusPx: 13,
+    gmKm3PerS2: 126686534,
+    radiusKm: 71492,
     a: 5.20288700, aDot: -0.00011607,
     e: 0.04838624, eDot: -0.00013253,
     i: 1.30439695, iDot: -0.00183714,
@@ -76,6 +91,8 @@ export const PLANETS = [
     name: 'Saturn',
     color: '#e3c88f',
     visualRadiusPx: 11,
+    gmKm3PerS2: 37931187,
+    radiusKm: 60268,
     a: 9.53667594, aDot: -0.00125060,
     e: 0.05386179, eDot: -0.00050991,
     i: 2.48599187, iDot: 0.00193609,
@@ -87,6 +104,8 @@ export const PLANETS = [
     name: 'Uranus',
     color: '#9fe3e3',
     visualRadiusPx: 8,
+    gmKm3PerS2: 5793939,
+    radiusKm: 25559,
     a: 19.18916464, aDot: -0.00196176,
     e: 0.04725744, eDot: -0.00004397,
     i: 0.77263783, iDot: -0.00242939,
@@ -98,6 +117,8 @@ export const PLANETS = [
     name: 'Neptune',
     color: '#5b7fe8',
     visualRadiusPx: 7.8,
+    gmKm3PerS2: 6836529,
+    radiusKm: 24764,
     a: 30.06992276, aDot: 0.00026291,
     e: 0.00859048, eDot: 0.00005105,
     i: 1.77004347, iDot: 0.00035372,
@@ -110,6 +131,8 @@ export const PLANETS = [
     color: '#cbb8a6',
     visualRadiusPx: 2.6,
     dwarf: true,
+    gmKm3PerS2: 869.6,
+    radiusKm: 1188.3,
     a: 39.48211675, aDot: -0.00031596,
     e: 0.24882730, eDot: 0.00005170,
     i: 17.14001206, iDot: 0.00004818,

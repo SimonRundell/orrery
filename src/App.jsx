@@ -3,7 +3,10 @@ import './App.css';
 import OrreryCanvas from './components/OrreryCanvas.jsx';
 import TimeControls from './components/TimeControls.jsx';
 import ObjectPanel from './components/ObjectPanel.jsx';
+import MissionBuilder from './components/MissionBuilder.jsx';
+import CMFloatAd from './components/CMFloatAd.jsx';
 import { computeSystem } from './physics/solarSystem.js';
+import { computeMission } from './physics/mission.js';
 import { dateToJd } from './physics/time.js';
 
 const DEFAULT_SCALE = 130; // px per AU, shows out to about the asteroid belt
@@ -40,6 +43,8 @@ function App() {
   const [camera, setCamera] = useState({ scale: DEFAULT_SCALE, panX: 0, panY: 0, focus: 'Sun' });
   const [selected, setSelected] = useState(null);
   const [labelMode, setLabelMode] = useState('all'); // 'all' | 'planets' | 'none'
+  const [view, setView] = useState('orrery'); // 'orrery' | 'mission'
+  const [legs, setLegs] = useState([]);
 
   const lastFrameRef = useRef(null);
 
@@ -63,6 +68,15 @@ function App() {
 
   const system = useMemo(() => computeSystem(jd), [jd]);
 
+  const computedMission = useMemo(() => {
+    if (legs.length === 0) return { legs: [], totalDeltaVKmPerS: 0 };
+    try {
+      return computeMission(legs);
+    } catch (err) {
+      return { legs: [], totalDeltaVKmPerS: 0, error: err.message };
+    }
+  }, [legs]);
+
   const handleFocus = (name) => {
     setCamera((prev) => ({
       ...prev,
@@ -77,8 +91,21 @@ function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1>Orrery</h1>
-        <p className="app-subtitle">Solar system positions from Keplerian orbital elements</p>
+        <div className="app-header-top">
+          <div className="app-title">
+            <img src="/favicon.png" alt="" className="app-logo" />
+            <h1>Orrery</h1>
+          </div>
+          <div className="view-tabs">
+            <button className={`view-tab ${view === 'orrery' ? 'active' : ''}`} onClick={() => setView('orrery')}>Orrery</button>
+            <button className={`view-tab ${view === 'mission' ? 'active' : ''}`} onClick={() => setView('mission')}>Mission Planner</button>
+          </div>
+        </div>
+        <p className="app-subtitle">
+          {view === 'orrery'
+            ? 'Solar system positions from Keplerian orbital elements'
+            : 'Plan a probe trajectory: transfers, burns and gravity assists'}
+        </p>
       </header>
 
       <div className="app-body">
@@ -89,18 +116,31 @@ function App() {
           selected={selected}
           onSelect={setSelected}
           labelMode={labelMode}
+          mission={view === 'mission' ? computedMission : null}
         />
-        <ObjectPanel
-          system={system}
-          selected={selected}
-          onSelect={setSelected}
-          onFocus={handleFocus}
-          labelMode={labelMode}
-          setLabelMode={setLabelMode}
-        />
+        {view === 'orrery' ? (
+          <ObjectPanel
+            system={system}
+            selected={selected}
+            onSelect={setSelected}
+            onFocus={handleFocus}
+            labelMode={labelMode}
+            setLabelMode={setLabelMode}
+          />
+        ) : (
+          <MissionBuilder
+            legs={legs}
+            setLegs={setLegs}
+            computedMission={computedMission}
+            system={system}
+            jd={jd}
+          />
+        )}
       </div>
 
       <TimeControls jd={jd} setJd={setJd} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} />
+
+      <CMFloatAd />
     </div>
   );
 }

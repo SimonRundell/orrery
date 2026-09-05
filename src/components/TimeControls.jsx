@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { dateToJd, jdToDate, formatGmt } from '../physics/time.js';
+import { dateToJd, jdToDate, formatGmt, inputValueToJd, jdToInputValue } from '../physics/time.js';
 
 const SPEED_PRESETS = [
   { label: '1 hour / sec', value: 1 / 24 },
@@ -12,28 +12,11 @@ const SPEED_PRESETS = [
 ];
 
 /**
- * Parse a `datetime-local` input value ("YYYY-MM-DDTHH:MM") as GMT/UTC,
- * ignoring the browser's local timezone.
- */
-function parseAsUtc(localValue) {
-  const [datePart, timePart] = localValue.split('T');
-  const [year, month, day] = datePart.split('-').map(Number);
-  const [hour, minute] = (timePart || '00:00').split(':').map(Number);
-  return new Date(Date.UTC(year, month - 1, day, hour, minute));
-}
-
-/** Format a Date as a `datetime-local` input value, using UTC fields. */
-function toLocalInputValue(date) {
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}T${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
-}
-
-/**
  * Playback controls for simulated time: play/pause, speed, direction, a
  * jump-to-date field (interpreted as GMT) and a "now" shortcut.
  */
 export default function TimeControls({ jd, setJd, playing, setPlaying, speed, setSpeed }) {
-  const [dateInput, setDateInput] = useState(() => toLocalInputValue(jdToDate(jd)));
+  const [dateInput, setDateInput] = useState(() => jdToInputValue(jd));
 
   const magnitude = Math.abs(speed);
   const reversed = speed < 0;
@@ -46,14 +29,14 @@ export default function TimeControls({ jd, setJd, playing, setPlaying, speed, se
   const toggleReverse = () => setSpeed(-speed);
 
   const jumpToDate = () => {
-    const date = parseAsUtc(dateInput);
-    if (!Number.isNaN(date.getTime())) setJd(dateToJd(date));
+    const parsedJd = inputValueToJd(dateInput);
+    if (!Number.isNaN(parsedJd)) setJd(parsedJd);
   };
 
   const jumpToNow = () => {
     const now = new Date();
     setJd(dateToJd(now));
-    setDateInput(toLocalInputValue(now));
+    setDateInput(jdToInputValue(dateToJd(now)));
   };
 
   return (

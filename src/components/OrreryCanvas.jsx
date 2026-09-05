@@ -1,8 +1,13 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { computeSystem } from '../physics/solarSystem.js';
+import { sampleMissionAt } from '../physics/mission.js';
+import { sphereOfInfluenceAu } from '../physics/orbitalMechanics.js';
+import { PLANETS } from '../data/planets.js';
 
 const SUN_COLOR = '#ffd75e';
 const SUN_VISUAL_RADIUS_PX = 10;
+const MISSION_PATH_COLOR = '#5ff0ff';
+const PROBE_COLOR = '#ffffff';
 
 /**
  * Build the flat list of all drawable bodies (sun, planets, moons, comets)
@@ -48,7 +53,7 @@ function focusCenter(system, focusName) {
  * planets, their major moons and any comets, with mouse-drag panning and
  * scroll-wheel zoom centred on the cursor.
  */
-export default function OrreryCanvas({ jd, camera, onCameraChange, selected, onSelect, labelMode }) {
+export default function OrreryCanvas({ jd, camera, onCameraChange, selected, onSelect, labelMode, mission }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const dragState = useRef(null);
@@ -166,7 +171,53 @@ export default function OrreryCanvas({ jd, camera, onCameraChange, selected, onS
         ctx.fillText(body.name, sx + body.visualRadiusPx + 4, sy + 4);
       }
     }
-  }, [jd, camera, selected, labelMode, size, worldToScreen]);
+
+    // Mission overlay: planned/flown legs, a dashed sphere-of-influence
+    // circle at each gravity-assist waypoint, and the probe's current
+    // position - all drawn after the natural bodies so they read as an
+    // overlay on top of the orrery, not part of it.
+    if (mission && mission.legs.length > 0) {
+      ctx.setLineDash([6, 5]);
+      for (const leg of mission.legs) {
+        drawPath(leg.pathPoints, MISSION_PATH_COLOR, 0.85);
+
+        if (leg.type === 'gravityAssist' && leg.pathPoints.length > 0) {
+          const planet = PLANETS.find((p) => p.name === leg.atBody);
+          if (planet) {
+            const soiAu = sphereOfInfluenceAu(planet.a, planet.gmKm3PerS2);
+            const centre = leg.pathPoints[0];
+            const { sx, sy } = toScreen(centre.x, centre.y);
+            const soiPx = soiAu * camera.scale;
+            ctx.beginPath();
+            ctx.strokeStyle = MISSION_PATH_COLOR;
+            ctx.globalAlpha = 0.4;
+            ctx.arc(sx, sy, Math.max(soiPx, 3), 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+        }
+      }
+      ctx.setLineDash([]);
+
+      const probeState = sampleMissionAt(mission, jd);
+      if (probeState) {
+        const { sx, sy } = toScreen(probeState.x, probeState.y);
+        ctx.beginPath();
+        ctx.fillStyle = PROBE_COLOR;
+        ctx.moveTo(sx, sy - 6);
+        ctx.lineTo(sx + 5, sy + 5);
+        ctx.lineTo(sx - 5, sy + 5);
+        ctx.closePath();
+        ctx.fill();
+
+        if (labelMode !== 'none') {
+          ctx.font = '12px "Trebuchet MS", sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.fillText('Probe', sx + 8, sy + 4);
+        }
+      }
+    }
+  }, [jd, camera, selected, labelMode, size, worldToScreen, mission]);
 
   const handleWheel = useCallback(
     (e) => {

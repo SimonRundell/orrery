@@ -45,3 +45,24 @@ export function formatGmt(date) {
     `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())} GMT`
   );
 }
+
+/**
+ * Parse a `datetime-local` input value ("YYYY-MM-DDTHH:MM") as GMT/UTC,
+ * ignoring the browser's local timezone, and return the equivalent
+ * Julian Date directly.
+ * @param {string} inputValue
+ * @returns {number} Julian Date
+ */
+export function inputValueToJd(inputValue) {
+  const [datePart, timePart] = inputValue.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute] = (timePart || '00:00').split(':').map(Number);
+  return dateToJd(new Date(Date.UTC(year, month - 1, day, hour, minute)));
+}
+
+/** Format a Julian Date as a `datetime-local` input value, in GMT/UTC. */
+export function jdToInputValue(jd) {
+  const date = jdToDate(jd);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}T${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+}
