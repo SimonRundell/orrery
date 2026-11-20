@@ -2,7 +2,7 @@
  * CMFloatAd
  *
  * Floating branding banner – hover to expand full contact details.
- * Modified for Exeter College by Simon Rundell, Dept of ITDD.
+ * Modified for Exeter College by Simon Rundell, Dept of Cybersecurity and Digital Technologies.
  *
  * @param {Object} props
  * @param {string} [props.color='#334155']   - Text / icon colour.
